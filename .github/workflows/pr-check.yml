@@ -1,0 +1,40 @@
+# PR / fix 分支的轻量验证 — Linux cargo check + warp_terminal 单测。
+# zap_release.yml 头部注释引用的就是本文件(之前缺失)。
+# 全量三平台打包仍走 Zap Release (push tag v* / workflow_dispatch)。
+
+name: PR Check
+
+on:
+  push:
+    branches:
+      - "fix/**"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check-warp-terminal:
+    name: Check + test warp_terminal (Linux)
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - uses: ./.github/actions/prepare_environment
+        with:
+          target_os: linux
+          is_self_hosted: false
+          install_test_deps: true
+
+      - name: cargo check -p warp_terminal
+        run: cargo check -p warp_terminal
+        shell: bash
+
+      - name: escape_sequences unit tests
+        run: cargo test -p warp_terminal --lib escape_sequences
+        shell: bash
