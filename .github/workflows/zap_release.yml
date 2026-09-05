@@ -405,12 +405,13 @@ jobs:
               # 预装 PKGBUILD `depends` 里的运行时依赖,避免 makepkg -s
               # 在容器内调 `sudo pacman -S` 装缺包(builder 没有免密 sudo,
               # 会因为读不到密码退出 8,Arch 包就此漏掉,见 run 26267606877)。
-              # `opengl-driver` 在官方仓库里不存在(NixOS 概念 / AUR 虚拟包),
-              # 单独用 --assume-installed 让依赖检查跳过它。
+              # `mesa` 提供虚拟包 `opengl-driver`(PKGBUILD depends 要求它):
+              # --assume-installed 是 pacman 专属选项,makepkg 不接受/不透传,
+              # 直接报 `invalid option`,exit 3(见 v2026.09.03.2 构建)。
               pacman -Sy --noconfirm --needed \
                 base-devel git sudo rust cargo-about \
                 curl default-cursors fontconfig libegl libx11 libxcb \
-                libxcursor libxi libxkbcommon-x11 xdg-utils zlib &&
+                libxcursor libxi libxkbcommon-x11 mesa xdg-utils zlib &&
               # 用 host uid/gid 建用户,挂进来的 /work 与 /cargo-home owner 就是它,
               # 不用 chown,直接 sudo -u 即可读写。
               groupadd -g "$HOST_GID" builder 2>/dev/null || true
@@ -424,11 +425,11 @@ jobs:
                 bash -c "
                   git config --global --add safe.directory /work
                   cd /work
-                  # 依赖已在外层 pacman 装好;告诉 makepkg `opengl-driver`
-                  # 视为已安装,避免它去 pacman -S 一个仓库里没有的包。
+                  # 依赖已在外层 pacman 装好(mesa 覆盖 opengl-driver),
+                  # makepkg -s 发现依赖满足就不再调 pacman。
                   # 另外带 --noconfirm:容器里没透传 GITHUB_ACTIONS,
                   # bundle_arch 里原生的那个分支不会生效。
-                  MAKEPKG_EXTRA_ARGS='\''--noconfirm --assume-installed opengl-driver'\'' \
+                  MAKEPKG_EXTRA_ARGS='\''--noconfirm'\'' \
                     script/bundle --skip-build --channel oss --arch x86_64 --packages arch
                 "
             '
