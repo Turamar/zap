@@ -108,7 +108,9 @@ pub fn convert_keyboard_input_event(
     let key = convert_key(input_key)?.to_string();
 
     let mut key = key;
-    if window_state.modifiers.control_key() && !window_state.modifiers.alt_key() {
+    let ctrl = window_state.modifiers.control_key();
+    let alt = window_state.modifiers.alt_key();
+    if uses_positional_letter(ctrl, alt) {
         if let Some(letter) = physical_key_to_us_letter(input.physical_key) {
             key = if shift {
                 letter.to_ascii_uppercase().to_string()
@@ -246,6 +248,10 @@ fn get_input_key(logical_key: &Key, is_shift: bool) -> Key {
         (Character(character), false) => Character(character.to_lowercase().into()),
         (non_char_key, _) => non_char_key.clone(),
     }
+}
+
+fn uses_positional_letter(ctrl: bool, alt: bool) -> bool {
+    (ctrl || alt) && !(ctrl && alt)
 }
 
 fn physical_key_to_us_letter(physical_key: PhysicalKey) -> Option<char> {

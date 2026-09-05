@@ -1,4 +1,7 @@
-use super::{get_input_key, physical_key_to_us_letter, text_fallback_event_for_unconverted_key};
+use super::{
+    get_input_key, physical_key_to_us_letter, text_fallback_event_for_unconverted_key,
+    uses_positional_letter,
+};
 use winit::event::ElementState;
 use winit::keyboard::{Key::Character, KeyCode, ModifiersState, PhysicalKey, SmolStr};
 
@@ -80,6 +83,22 @@ fn physical_key_returns_none_for_non_letter_keys() {
             None,
             physical_key_to_us_letter(PhysicalKey::Code(code)),
             "physical {code:?} should not be remapped"
+        );
+    }
+}
+
+#[test]
+fn positional_letter_applies_to_ctrl_or_alt_but_not_altgr() {
+    for ((ctrl, alt), expected) in [
+        ((false, false), false),
+        ((true, false), true),
+        ((false, true), true),
+        ((true, true), false),
+    ] {
+        assert_eq!(
+            expected,
+            uses_positional_letter(ctrl, alt),
+            "ctrl={ctrl} alt={alt} should resolve by position: {expected}"
         );
     }
 }
