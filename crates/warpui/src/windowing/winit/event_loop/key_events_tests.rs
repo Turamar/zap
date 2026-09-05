@@ -1,6 +1,6 @@
 use super::{
-    get_input_key, physical_key_to_us_letter, text_fallback_event_for_unconverted_key,
-    uses_positional_letter,
+    get_input_key, physical_key_to_us_letter, physical_key_to_us_symbol,
+    text_fallback_event_for_unconverted_key, uses_positional_letter,
 };
 use winit::event::ElementState;
 use winit::keyboard::{Key::Character, KeyCode, ModifiersState, PhysicalKey, SmolStr};
@@ -100,6 +100,45 @@ fn positional_letter_applies_to_ctrl_or_alt_but_not_altgr() {
             uses_positional_letter(ctrl, alt),
             "ctrl={ctrl} alt={alt} should resolve by position: {expected}"
         );
+    }
+}
+
+#[test]
+fn physical_key_maps_symbols_to_us_layout_positionally() {
+    for (code, shift, expected) in [
+        (KeyCode::Backquote, false, '`'),
+        (KeyCode::Backquote, true, '~'),
+        (KeyCode::Digit2, false, '2'),
+        (KeyCode::Digit2, true, '@'),
+        (KeyCode::Minus, false, '-'),
+        (KeyCode::Minus, true, '_'),
+        (KeyCode::BracketLeft, false, '['),
+        (KeyCode::BracketLeft, true, '{'),
+        (KeyCode::Backslash, false, '\\'),
+        (KeyCode::Backslash, true, '|'),
+        (KeyCode::Semicolon, false, ';'),
+        (KeyCode::Semicolon, true, ':'),
+        (KeyCode::Slash, false, '/'),
+        (KeyCode::Slash, true, '?'),
+    ] {
+        assert_eq!(
+            Some(expected),
+            physical_key_to_us_symbol(PhysicalKey::Code(code), shift),
+            "physical {code:?} with shift={shift} should map to '{expected}'"
+        );
+    }
+}
+
+#[test]
+fn physical_key_symbol_returns_none_for_letters_and_named_keys() {
+    for code in [KeyCode::KeyA, KeyCode::Space, KeyCode::Enter] {
+        for shift in [false, true] {
+            assert_eq!(
+                None,
+                physical_key_to_us_symbol(PhysicalKey::Code(code), shift),
+                "physical {code:?} should not be remapped as a symbol"
+            );
+        }
     }
 }
 

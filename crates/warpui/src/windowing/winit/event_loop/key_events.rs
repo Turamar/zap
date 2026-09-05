@@ -117,6 +117,8 @@ pub fn convert_keyboard_input_event(
             } else {
                 letter.to_string()
             };
+        } else if let Some(symbol) = physical_key_to_us_symbol(input.physical_key, shift) {
+            key = symbol.to_string();
         }
     }
 
@@ -288,6 +290,38 @@ fn physical_key_to_us_letter(physical_key: PhysicalKey) -> Option<char> {
         },
         _ => None,
     }
+}
+
+fn physical_key_to_us_symbol(physical_key: PhysicalKey, shift: bool) -> Option<char> {
+    use winit::keyboard::KeyCode;
+    let (plain, shifted) = match physical_key {
+        PhysicalKey::Code(code) => match code {
+            KeyCode::Backquote => ('`', '~'),
+            KeyCode::Digit1 => ('1', '!'),
+            KeyCode::Digit2 => ('2', '@'),
+            KeyCode::Digit3 => ('3', '#'),
+            KeyCode::Digit4 => ('4', '$'),
+            KeyCode::Digit5 => ('5', '%'),
+            KeyCode::Digit6 => ('6', '^'),
+            KeyCode::Digit7 => ('7', '&'),
+            KeyCode::Digit8 => ('8', '*'),
+            KeyCode::Digit9 => ('9', '('),
+            KeyCode::Digit0 => ('0', ')'),
+            KeyCode::Minus => ('-', '_'),
+            KeyCode::Equal => ('=', '+'),
+            KeyCode::BracketLeft => ('[', '{'),
+            KeyCode::BracketRight => (']', '}'),
+            KeyCode::Backslash => ('\\', '|'),
+            KeyCode::Semicolon => (';', ':'),
+            KeyCode::Quote => ('\'', '"'),
+            KeyCode::Comma => (',', '<'),
+            KeyCode::Period => ('.', '>'),
+            KeyCode::Slash => ('/', '?'),
+            _ => return None,
+        },
+        _ => return None,
+    };
+    Some(if shift { shifted } else { plain })
 }
 
 /// Converts a winit [`winit::keyboard::Key`] to the corresponding string version
