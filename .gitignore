@@ -79,3 +79,6 @@ official-website/
 docs/openwarp-cloud-removal-plan.md
 .omx/
 .tmp/
+
+# Локальная инструкция для AI-агентов, не публикуется.
+AGENTS.md
