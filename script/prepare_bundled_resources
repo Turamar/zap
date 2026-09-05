@@ -140,6 +140,8 @@ if [ -z "$NO_LICENSES" ]; then
   done
 fi
 
+cp "$REPO_ROOT/LICENSE-AGPL" "$DEST_DIR/LICENSE-AGPL"
+
 # Generate settings JSON schema unless explicitly skipped.
 if [ "${SKIP_SETTINGS_SCHEMA:-}" != "1" ]; then
   SCHEMA_OUTPUT="$DEST_DIR/settings_schema.json"

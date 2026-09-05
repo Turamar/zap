@@ -180,6 +180,8 @@ foreach ($entry in $AdditionalLicenses) {
     Add-Content -Path $LicensesOutput -Value ''
 }
 
+Copy-Item -Path (Join-Path $RepoRoot 'LICENSE-AGPL') -Destination $DestinationDir -Force
+
 # Generate settings JSON schema unless explicitly skipped.
 if ($env:SKIP_SETTINGS_SCHEMA -ne '1') {
     $SchemaOutput = Join-Path $DestinationDir 'settings_schema.json'
