@@ -1,6 +1,6 @@
-use super::{get_input_key, text_fallback_event_for_unconverted_key};
+use super::{get_input_key, physical_key_to_us_letter, text_fallback_event_for_unconverted_key};
 use winit::event::ElementState;
-use winit::keyboard::{Key::Character, ModifiersState, SmolStr};
+use winit::keyboard::{Key::Character, KeyCode, ModifiersState, PhysicalKey, SmolStr};
 
 #[test]
 fn test_get_input_key() {
@@ -47,6 +47,42 @@ fn test_get_input_key() {
                 }
             }
         }
+    }
+}
+
+#[test]
+fn physical_key_maps_letters_to_us_layout_positionally() {
+    // RU 布局下物理 V 报成 `м`:маппинг обязан вернуть `v`,
+    // иначе ctrl-v в русской раскладке не сработает。
+    for (code, expected) in [
+        (KeyCode::KeyA, 'a'),
+        (KeyCode::KeyC, 'c'),
+        (KeyCode::KeyT, 't'),
+        (KeyCode::KeyV, 'v'),
+        (KeyCode::KeyZ, 'z'),
+    ] {
+        assert_eq!(
+            Some(expected),
+            physical_key_to_us_letter(PhysicalKey::Code(code)),
+            "physical {code:?} should map to '{expected}'"
+        );
+    }
+}
+
+#[test]
+fn physical_key_returns_none_for_non_letter_keys() {
+    for code in [
+        KeyCode::Digit1,
+        KeyCode::Space,
+        KeyCode::Enter,
+        KeyCode::Slash,
+        KeyCode::Backquote,
+    ] {
+        assert_eq!(
+            None,
+            physical_key_to_us_letter(PhysicalKey::Code(code)),
+            "physical {code:?} should not be remapped"
+        );
     }
 }
 
