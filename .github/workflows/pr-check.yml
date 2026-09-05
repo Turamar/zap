@@ -56,9 +56,6 @@ jobs:
         run: cargo check -p warpui
         shell: bash
 
-      # Вы на Windows, а раннер Linux:эта проверка компилирует в том числе
-      # #[cfg(windows)]-ветки. Линковки нет(check не линкует), Windows-раннер
-      # не нужен — достаточно target std.
       - name: cargo check -p warpui for Windows target
         run: |
           rustup target add x86_64-pc-windows-msvc

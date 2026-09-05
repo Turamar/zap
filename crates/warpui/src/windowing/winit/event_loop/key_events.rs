@@ -107,12 +107,6 @@ pub fn convert_keyboard_input_event(
 
     let key = convert_key(input_key)?.to_string();
 
-    // ctrl+字母快捷键按物理键位解析,而不是按当前键盘布局的字符。
-    // 非拉丁布局下 logical_key 是布局字符(俄语 RU 把物理 V 报成 `м`),
-    // 直接拿去匹配 keymap 会让所有 ctrl+字母绑定失效。EN 布局下物理键位
-    // 与字符一致,行为与之前完全相同。
-    // alt 按住时跳过:Windows 上 ctrl+alt 即 AltGr,用来输入本国字符,
-    // 重映射会破坏文字输入。
     let mut key = key;
     if window_state.modifiers.control_key() && !window_state.modifiers.alt_key() {
         if let Some(letter) = physical_key_to_us_letter(input.physical_key) {
@@ -254,10 +248,6 @@ fn get_input_key(logical_key: &Key, is_shift: bool) -> Key {
     }
 }
 
-/// 把物理键位映射到美式布局下同位置的字母,非字母键返回 None。
-/// 仅用于 ctrl+字母快捷键的布局无关匹配:调用方保证只在 ctrl 按住且 alt
-/// 松开时使用(AltGr 组合必须走字符路径,否则 ломается ввод)。
-/// KeyCode 非穷尽枚举,通配分支是必需的。
 fn physical_key_to_us_letter(physical_key: PhysicalKey) -> Option<char> {
     use winit::keyboard::KeyCode;
     match physical_key {
@@ -288,11 +278,8 @@ fn physical_key_to_us_letter(physical_key: PhysicalKey) -> Option<char> {
             KeyCode::KeyX => Some('x'),
             KeyCode::KeyY => Some('y'),
             KeyCode::KeyZ => Some('z'),
-            // 数字与符号键保持布局相关行为:数字在常用布局下位置稳定,
-            // 符号差异超出本次修复范围。
             _ => None,
         },
-        // 无法识别物理键位时不做映射,保持原有行为。
         _ => None,
     }
 }

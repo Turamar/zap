@@ -52,8 +52,6 @@ fn test_get_input_key() {
 
 #[test]
 fn physical_key_maps_letters_to_us_layout_positionally() {
-    // RU 布局下物理 V 报成 `м`:маппинг обязан вернуть `v`,
-    // иначе ctrl-v в русской раскладке не сработает。
     for (code, expected) in [
         (KeyCode::KeyA, 'a'),
         (KeyCode::KeyC, 'c'),
